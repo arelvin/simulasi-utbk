@@ -1,0 +1,483 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.wrapper{padding:1.5rem 0;max-width:680px}
+.screen{display:none}.screen.active{display:block}
+.badge{display:inline-flex;align-items:center;gap:6px;background:#EAF3DE;color:#3B6D11;font-size:12px;font-weight:500;padding:5px 12px;border-radius:20px;margin-bottom:1rem}
+.start-header{text-align:center;padding:2rem 1rem 1.5rem}
+.start-title{font-size:22px;font-weight:500;color:var(--color-text-primary);margin-bottom:8px}
+.start-sub{font-size:14px;color:var(--color-text-secondary);margin-bottom:1.5rem}
+.module-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.5rem}
+.module-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem;cursor:pointer;transition:border-color .15s,background .15s}
+.module-card:hover{border-color:var(--color-border-secondary);background:var(--color-background-secondary)}
+.module-card.selected{border:2px solid #185FA5;background:#E6F1FB}
+.m-icon{font-size:22px;margin-bottom:6px;display:block}
+.m-title{font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:2px}
+.m-desc{font-size:12px;color:var(--color-text-secondary)}
+.module-card.selected .m-title{color:#185FA5}
+.btn-start{width:100%;padding:12px;background:#185FA5;color:#fff;border:none;border-radius:var(--border-radius-md);font-size:15px;font-weight:500;cursor:pointer;transition:background .15s}
+.btn-start:hover{background:#0C447C}
+.btn-start:disabled{background:var(--color-background-secondary);color:var(--color-text-tertiary);cursor:not-allowed}
+.quiz-top{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:1rem}
+.quiz-module-label{font-size:13px;font-weight:500;color:var(--color-text-secondary)}
+.timer-wrap{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:500;color:var(--color-text-primary)}
+.timer-wrap.warning{color:#E24B4A}
+.progress-bar-outer{height:4px;background:var(--color-border-tertiary);border-radius:2px;margin-bottom:1.25rem}
+.progress-bar-inner{height:4px;background:#185FA5;border-radius:2px;transition:width .3s}
+.q-nav-dots{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:1rem}
+.q-dot{width:24px;height:24px;border-radius:50%;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--color-text-secondary);cursor:pointer;font-weight:500;transition:all .12s}
+.q-dot.current{border:2px solid #185FA5;color:#185FA5;background:#E6F1FB}
+.q-dot.answered-correct{background:#E1F5EE;border-color:#0F6E56;color:#085041}
+.q-dot.answered-wrong{background:#FCEBEB;border-color:#E24B4A;color:#A32D2D}
+.q-dot.skipped{background:var(--color-background-secondary);color:var(--color-text-tertiary)}
+.q-num{font-size:12px;color:var(--color-text-secondary);margin-bottom:6px}
+.q-text{font-size:15px;color:var(--color-text-primary);line-height:1.65;margin-bottom:1.25rem}
+.q-passage{background:var(--color-background-secondary);border-left:3px solid #185FA5;padding:10px 14px;font-size:13px;line-height:1.65;color:var(--color-text-secondary);border-radius:0 var(--border-radius-md) var(--border-radius-md) 0;margin-bottom:1.25rem}
+.options{display:flex;flex-direction:column;gap:8px;margin-bottom:1.5rem}
+.option-btn{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);cursor:pointer;text-align:left;transition:border-color .12s,background .12s;font-size:14px;color:var(--color-text-primary);line-height:1.5}
+.option-btn:hover:not(:disabled){border-color:var(--color-border-secondary);background:var(--color-background-secondary)}
+.opt-key{font-weight:500;min-width:18px;color:var(--color-text-secondary)}
+.option-btn.selected{border:2px solid #185FA5;background:#E6F1FB}
+.option-btn.selected .opt-key{color:#185FA5}
+.option-btn.correct{border:2px solid #0F6E56;background:#E1F5EE}
+.option-btn.correct .opt-key{color:#0F6E56}
+.option-btn.wrong{border:2px solid #E24B4A;background:#FCEBEB}
+.option-btn.wrong .opt-key{color:#E24B4A}
+.option-btn:disabled{cursor:default}
+.feedback-box{padding:10px 14px;border-radius:var(--border-radius-md);font-size:13px;line-height:1.6;margin-bottom:1.25rem}
+.feedback-box.correct{background:#E1F5EE;color:#085041;border:0.5px solid #5DCAA5}
+.feedback-box.wrong{background:#FCEBEB;color:#501313;border:0.5px solid #F09595}
+.nav-row{display:flex;gap:8px}
+.btn-nav{flex:1;padding:10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:14px;font-weight:500;cursor:pointer;background:var(--color-background-primary);color:var(--color-text-primary);transition:background .12s}
+.btn-nav:hover{background:var(--color-background-secondary)}
+.btn-nav.primary{background:#185FA5;border-color:#185FA5;color:#fff}
+.btn-nav.primary:hover{background:#0C447C}
+.btn-nav:disabled{opacity:.4;cursor:not-allowed}
+.result-hero{text-align:center;padding:2rem 1rem 1.5rem}
+.score-circle{width:100px;height:100px;border-radius:50%;background:#E6F1FB;border:3px solid #185FA5;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;flex-direction:column}
+.score-num{font-size:28px;font-weight:500;color:#185FA5}
+.score-max{font-size:13px;color:var(--color-text-secondary)}
+.result-title{font-size:20px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px}
+.result-sub{font-size:14px;color:var(--color-text-secondary);margin-bottom:1.5rem}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:1.5rem}
+.stat-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;text-align:center}
+.stat-val{font-size:22px;font-weight:500;color:var(--color-text-primary)}
+.stat-lbl{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
+.stat-val.green{color:#0F6E56}.stat-val.red{color:#A32D2D}.stat-val.blue{color:#185FA5}
+.section-label{font-size:13px;font-weight:500;color:var(--color-text-secondary);margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
+.review-list{display:flex;flex-direction:column;gap:10px;margin-bottom:1.5rem}
+.review-item{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:12px 14px}
+.review-item.correct-item{border-left:3px solid #0F6E56;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0}
+.review-item.wrong-item{border-left:3px solid #E24B4A;border-radius:0 var(--border-radius-md) var(--border-radius-md) 0}
+.review-q{font-size:13px;color:var(--color-text-primary);margin-bottom:6px;line-height:1.55}
+.review-ans{font-size:12px;color:var(--color-text-secondary)}
+.r-correct{color:#0F6E56}.r-wrong{color:#E24B4A}
+.btn-retry{width:100%;padding:12px;background:#185FA5;color:#fff;border:none;border-radius:var(--border-radius-md);font-size:15px;font-weight:500;cursor:pointer}
+.btn-retry:hover{background:#0C447C}
+.score-bar-wrap{margin-bottom:1.5rem}
+.score-bar-bg{height:12px;background:var(--color-background-secondary);border-radius:6px;overflow:hidden;margin-bottom:4px}
+.score-bar-fill{height:12px;background:#185FA5;border-radius:6px;transition:width .6s ease}
+.score-bar-label{display:flex;justify-content:space-between;font-size:12px;color:var(--color-text-secondary)}
+</style>
+
+<h2 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Simulasi UTBK SNBT 20 soal interaktif dengan timer dan pembahasan lengkap</h2>
+
+<div class="wrapper">
+<div class="screen active" id="screen-start">
+  <div class="start-header">
+    <div class="badge"><i class="ti ti-school" aria-hidden="true"></i> SNBT 2025 — 20 Soal</div>
+    <div class="start-title">Simulasi UTBK SNBT</div>
+    <div class="start-sub">20 soal per modul · Timer 15 menit · Pembahasan lengkap</div>
+  </div>
+  <div class="section-label">Pilih Modul</div>
+  <div class="module-grid">
+    <div class="module-card" data-module="tps-pu" onclick="selectModule(this)"><span class="m-icon">🧠</span><div class="m-title">Penalaran Umum</div><div class="m-desc">TPS — Logika & argumen</div></div>
+    <div class="module-card" data-module="tps-pk" onclick="selectModule(this)"><span class="m-icon">📐</span><div class="m-title">Pengetahuan Kuantitatif</div><div class="m-desc">TPS — Matematika & numerasi</div></div>
+    <div class="module-card" data-module="lit-id" onclick="selectModule(this)"><span class="m-icon">📖</span><div class="m-title">Literasi Bahasa Indonesia</div><div class="m-desc">Wacana & kebahasaan</div></div>
+    <div class="module-card" data-module="lit-en" onclick="selectModule(this)"><span class="m-icon">🌐</span><div class="m-title">Literasi Bahasa Inggris</div><div class="m-desc">Reading & grammar</div></div>
+  </div>
+  <button class="btn-start" id="btn-start" disabled onclick="startQuiz()">Mulai Latihan — 20 Soal ↗</button>
+</div>
+
+<div class="screen" id="screen-quiz">
+  <div class="quiz-top">
+    <div class="quiz-module-label" id="quiz-module-label">—</div>
+    <div class="timer-wrap" id="timer-wrap"><i class="ti ti-clock" aria-hidden="true"></i> <span id="timer-text">15:00</span></div>
+  </div>
+  <div class="progress-bar-outer"><div class="progress-bar-inner" id="progress-bar" style="width:0%"></div></div>
+  <div class="q-nav-dots" id="q-nav-dots"></div>
+  <div class="q-num" id="q-num">Soal 1 dari 20</div>
+  <div id="q-passage" class="q-passage" style="display:none"></div>
+  <div class="q-text" id="q-text"></div>
+  <div class="options" id="options"></div>
+  <div id="feedback-box" class="feedback-box" style="display:none"></div>
+  <div class="nav-row">
+    <button class="btn-nav" id="btn-prev" onclick="prevQuestion()">← Sebelumnya</button>
+    <button class="btn-nav" onclick="skipQuestion()" id="btn-skip">Lewati</button>
+    <button class="btn-nav primary" onclick="confirmAnswer()" id="btn-confirm" disabled>Konfirmasi</button>
+  </div>
+</div>
+
+<div class="screen" id="screen-result">
+  <div class="result-hero">
+    <div class="score-circle"><div class="score-num" id="r-score">0</div><div class="score-max">dari 20</div></div>
+    <div class="result-title" id="r-title">—</div>
+    <div class="result-sub" id="r-sub">—</div>
+  </div>
+  <div class="score-bar-wrap">
+    <div class="score-bar-bg"><div class="score-bar-fill" id="score-bar" style="width:0%"></div></div>
+    <div class="score-bar-label"><span>0</span><span id="r-pct">0%</span><span>100%</span></div>
+  </div>
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-val green" id="r-correct">0</div><div class="stat-lbl">Benar</div></div>
+    <div class="stat-card"><div class="stat-val red" id="r-wrong">0</div><div class="stat-lbl">Salah</div></div>
+    <div class="stat-card"><div class="stat-val" id="r-skip">0</div><div class="stat-lbl">Dilewati</div></div>
+    <div class="stat-card"><div class="stat-val blue" id="r-pct2">0%</div><div class="stat-lbl">Nilai</div></div>
+  </div>
+  <div class="section-label">Pembahasan Lengkap</div>
+  <div class="review-list" id="review-list"></div>
+  <button class="btn-retry" onclick="retryQuiz()">Coba Modul Lain ↗</button>
+</div>
+</div>
+
+<script>
+const QUESTIONS = {
+"tps-pu":[
+{q:"Semua atlet berlatih keras. Budi adalah seorang atlet. Kesimpulan yang tepat adalah...",opts:["Budi mungkin tidak berlatih keras","Budi berlatih keras","Budi lebih keras dari atlet lain","Budi adalah atlet terbaik","Tidak ada yang dapat disimpulkan"],ans:1,exp:"Silogisme deduktif: Semua atlet berlatih keras + Budi adalah atlet = Budi berlatih keras."},
+{q:"Jika hari ini hujan, maka jalanan basah. Hari ini jalanan tidak basah. Maka...",opts:["Hari ini mungkin hujan","Hari ini pasti hujan","Hari ini tidak hujan","Besok akan hujan","Kesimpulan tidak dapat ditarik"],ans:2,exp:"Modus Tollens: P→Q, ¬Q, maka ¬P. Jika jalanan tidak basah, maka hari ini tidak hujan."},
+{q:"Dalam barisan: 3, 6, 12, 24, ... Angka berikutnya adalah...",opts:["36","40","48","50","42"],ans:2,exp:"Pola perkalian 2: 3→6→12→24→48."},
+{q:"Rani lebih tinggi dari Siti. Dewi lebih pendek dari Siti. Urutan tertinggi ke terendah adalah...",opts:["Siti–Rani–Dewi","Dewi–Siti–Rani","Rani–Siti–Dewi","Rani–Dewi–Siti","Siti–Dewi–Rani"],ans:2,exp:"Rani > Siti > Dewi."},
+{q:"Semua B adalah C. Sebagian A adalah B. Kesimpulan yang tepat adalah...",opts:["Semua A adalah C","Semua C adalah A","Sebagian A adalah C","Tidak ada A yang C","Semua A adalah B"],ans:2,exp:"Dari 'Sebagian A adalah B' dan 'Semua B adalah C', maka sebagian A (yang merupakan B) adalah C."},
+{q:"Dalam barisan: 2, 5, 10, 17, 26, ... Angka berikutnya adalah...",opts:["35","36","37","38","39"],ans:2,exp:"Selisih berurutan: 3, 5, 7, 9, 11. Selisih bertambah 2. Maka 26 + 11 = 37."},
+{q:"Tidak ada siswa yang suka mencontek. Andi suka mencontek. Kesimpulan yang tepat adalah...",opts:["Andi adalah siswa yang baik","Andi bukan siswa","Andi mungkin bukan siswa","Semua siswa seperti Andi","Andi perlu dibimbing"],ans:1,exp:"Jika tidak ada siswa yang suka mencontek, dan Andi suka mencontek, maka Andi bukan siswa."},
+{q:"Dani lebih tua dari Eko. Fahri lebih muda dari Eko. Gani lebih tua dari Dani. Siapa yang paling tua?",opts:["Dani","Eko","Fahri","Gani","Tidak dapat ditentukan"],ans:3,exp:"Gani > Dani > Eko > Fahri. Gani adalah yang paling tua."},
+{q:"Jika P maka Q. Jika Q maka R. P terjadi. Maka...",opts:["R tidak terjadi","Q tidak terjadi","R terjadi","P tidak terjadi","Tidak ada kesimpulan"],ans:2,exp:"P→Q dan Q→R, serta P benar. Maka Q benar (dari premis 1) dan R benar (dari premis 2)."},
+{q:"Barisan: 1, 1, 2, 3, 5, 8, 13, ... Angka berikutnya adalah...",opts:["18","19","20","21","22"],ans:3,exp:"Barisan Fibonacci: setiap angka adalah jumlah dua angka sebelumnya. 8+13 = 21."},
+{q:"Semua mahasiswa membaca buku. Tidak semua pembaca buku adalah mahasiswa. Kesimpulan yang tepat adalah...",opts:["Semua pembaca buku adalah mahasiswa","Ada pembaca buku yang bukan mahasiswa","Tidak ada mahasiswa yang membaca","Mahasiswa tidak suka buku","Pembaca buku selalu menjadi mahasiswa"],ans:1,exp:"Kalimat kedua secara langsung menyatakan bahwa ada pembaca buku yang bukan mahasiswa."},
+{q:"Jika X > Y dan Y > Z, maka hubungan X dan Z adalah...",opts:["X < Z","X = Z","X > Z","Tidak dapat ditentukan","X ≤ Z"],ans:2,exp:"Berdasarkan sifat transitif: jika X > Y dan Y > Z, maka X > Z."},
+{q:"Hani berada di sebelah kiri Ila. Joko berada di sebelah kanan Ila. Kiki berada di antara Hani dan Ila. Urutan dari kiri ke kanan adalah...",opts:["Hani–Ila–Kiki–Joko","Hani–Kiki–Ila–Joko","Joko–Ila–Kiki–Hani","Kiki–Hani–Ila–Joko","Ila–Hani–Kiki–Joko"],ans:1,exp:"Hani di kiri Ila, Joko di kanan Ila. Kiki antara Hani dan Ila. Maka: Hani–Kiki–Ila–Joko."},
+{q:"Barisan: 100, 50, 25, 12.5, ... Angka berikutnya adalah...",opts:["5","6","6.25","7","7.5"],ans:2,exp:"Pola dibagi 2: 100÷2=50, 50÷2=25, 25÷2=12.5, 12.5÷2=6.25."},
+{q:"Pernyataan: 'Jika rajin belajar maka lulus ujian.' Ingkaran yang tepat adalah...",opts:["Jika tidak rajin belajar maka tidak lulus ujian","Rajin belajar dan tidak lulus ujian","Tidak rajin belajar atau lulus ujian","Lulus ujian walaupun tidak belajar","Tidak ada yang rajin belajar"],ans:1,exp:"Ingkaran dari P→Q adalah P ∧ ¬Q: rajin belajar DAN tidak lulus ujian."},
+{q:"Semua X adalah Y. Tidak ada Y yang Z. Kesimpulan yang tepat adalah...",opts:["Semua X adalah Z","Sebagian X adalah Z","Tidak ada X yang Z","Sebagian Z adalah X","Semua Z adalah X"],ans:2,exp:"Semua X adalah Y, dan tidak ada Y yang Z, maka tidak ada X yang Z."},
+{q:"Barisan: 7, 14, 28, 56, ... Angka berikutnya adalah...",opts:["96","102","108","112","120"],ans:3,exp:"Pola perkalian 2: 7→14→28→56→112."},
+{q:"Ali lebih pandai dari Beni. Cici sama pandainya dengan Ali. Dodi lebih pandai dari Cici. Urutan dari paling pandai adalah...",opts:["Ali–Cici–Dodi–Beni","Dodi–Cici–Ali–Beni","Dodi–Ali–Cici–Beni","Cici–Dodi–Ali–Beni","Beni–Ali–Cici–Dodi"],ans:1,exp:"Dodi > Cici = Ali > Beni. Maka urutan: Dodi–Cici–Ali–Beni (Cici dan Ali setara)."},
+{q:"Dari pernyataan 'Semua kucing adalah mamalia', manakah yang pasti benar?",opts:["Semua mamalia adalah kucing","Beberapa mamalia adalah kucing","Tidak ada kucing yang bukan mamalia","Semua hewan adalah kucing","Kucing bukan hewan"],ans:2,exp:"Jika semua kucing adalah mamalia, maka beberapa mamalia (yaitu kucing) adalah kucing — juga berlaku 'tidak ada kucing yang bukan mamalia'."},
+{q:"Pola gambar: △ □ ○ △ □ ○ △ □ ... Bentuk berikutnya adalah...",opts:["△","□","○","△□","Tidak ada pola"],ans:2,exp:"Pola berulang dengan siklus 3: △ □ ○. Setelah □ adalah ○."}
+],
+"tps-pk":[
+{q:"Sebuah persegi panjang memiliki panjang 12 cm dan lebar 8 cm. Luas persegi panjang tersebut adalah...",opts:["80 cm²","96 cm²","100 cm²","88 cm²","104 cm²"],ans:1,exp:"Luas = panjang × lebar = 12 × 8 = 96 cm²."},
+{q:"Jika 3x + 7 = 22, maka nilai x adalah...",opts:["3","4","5","6","7"],ans:2,exp:"3x = 22 - 7 = 15, x = 5."},
+{q:"Harga setelah diskon 20% adalah Rp160.000. Harga awal adalah...",opts:["Rp180.000","Rp192.000","Rp200.000","Rp175.000","Rp210.000"],ans:2,exp:"Harga awal = 160.000 / 0,8 = Rp200.000."},
+{q:"Berapa persen 45 dari 180?",opts:["20%","25%","30%","35%","40%"],ans:1,exp:"(45/180) × 100% = 25%."},
+{q:"Sebuah mobil menempuh 240 km dalam 3 jam. Kecepatan rata-ratanya adalah...",opts:["70 km/jam","75 km/jam","80 km/jam","85 km/jam","90 km/jam"],ans:2,exp:"Kecepatan = 240/3 = 80 km/jam."},
+{q:"Nilai rata-rata 5 bilangan adalah 12. Jika satu bilangan ditambahkan sehingga rata-rata menjadi 13, bilangan yang ditambahkan adalah...",opts:["14","16","18","20","22"],ans:2,exp:"Jumlah awal = 5×12=60. Jumlah baru = 6×13=78. Bilangan baru = 78-60 = 18."},
+{q:"Berapa nilai 2³ + 3² ?",opts:["13","15","17","19","23"],ans:2,exp:"2³ = 8, 3² = 9. 8 + 9 = 17."},
+{q:"Sebuah lingkaran memiliki jari-jari 7 cm. Kelilingnya adalah... (π = 22/7)",opts:["42 cm","44 cm","46 cm","48 cm","50 cm"],ans:1,exp:"Keliling = 2πr = 2 × (22/7) × 7 = 44 cm."},
+{q:"Jika 15% dari suatu bilangan adalah 45, maka bilangan tersebut adalah...",opts:["250","275","300","325","350"],ans:2,exp:"Bilangan = 45 / 0,15 = 300."},
+{q:"Dalam sebuah kelas, 60% dari 40 siswa lulus ujian. Berapa siswa yang lulus?",opts:["20","22","24","26","28"],ans:2,exp:"60% × 40 = 0,6 × 40 = 24 siswa."},
+{q:"Selisih dua bilangan adalah 14. Jika bilangan yang lebih besar adalah 3 kali bilangan yang lebih kecil, kedua bilangan tersebut adalah...",opts:["5 dan 19","7 dan 21","6 dan 20","8 dan 22","4 dan 18"],ans:1,exp:"Misal bilangan kecil = x. Maka 3x - x = 14, 2x = 14, x = 7. Bilangan: 7 dan 21."},
+{q:"Sebuah kubus memiliki sisi 5 cm. Volume kubus tersebut adalah...",opts:["100 cm³","115 cm³","120 cm³","125 cm³","130 cm³"],ans:3,exp:"Volume = sisi³ = 5³ = 125 cm³."},
+{q:"Jika p = 4 dan q = 3, nilai dari p² - q² adalah...",opts:["5","6","7","8","9"],ans:2,exp:"p² - q² = 16 - 9 = 7."},
+{q:"Sebuah pekerjaan dapat diselesaikan 6 orang dalam 12 hari. Berapa hari jika dikerjakan 9 orang?",opts:["6 hari","7 hari","8 hari","9 hari","10 hari"],ans:2,exp:"Total hari-orang = 6×12=72. Dengan 9 orang: 72/9 = 8 hari."},
+{q:"FPB dari 48 dan 72 adalah...",opts:["12","18","24","36","48"],ans:2,exp:"48 = 2⁴×3, 72 = 2³×3². FPB = 2³×3 = 24."},
+{q:"Jika 2(x+3) = 3(x-1), maka x = ...",opts:["6","7","8","9","10"],ans:3,exp:"2x+6 = 3x-3, 6+3 = 3x-2x, x = 9."},
+{q:"Sebuah segitiga siku-siku memiliki dua sisi tegak 6 cm dan 8 cm. Panjang hipotenusanya adalah...",opts:["9 cm","10 cm","11 cm","12 cm","13 cm"],ans:1,exp:"Hipotenusa = √(6²+8²) = √(36+64) = √100 = 10 cm."},
+{q:"Jika bunga tabungan 5% per tahun, berapa bunga dari pokok Rp2.000.000 setelah 2 tahun (bunga sederhana)?",opts:["Rp150.000","Rp175.000","Rp200.000","Rp225.000","Rp250.000"],ans:2,exp:"Bunga = pokok × rate × waktu = 2.000.000 × 5% × 2 = Rp200.000."},
+{q:"KPK dari 12 dan 18 adalah...",opts:["24","30","36","42","48"],ans:2,exp:"12 = 2²×3, 18 = 2×3². KPK = 2²×3² = 36."},
+{q:"Sebuah toko menjual 3 baju dengan total Rp270.000. Jika membeli 5 baju, total harganya adalah...",opts:["Rp400.000","Rp430.000","Rp450.000","Rp480.000","Rp500.000"],ans:2,exp:"Harga per baju = 270.000/3 = 90.000. 5 baju = 5 × 90.000 = Rp450.000."}
+],
+"lit-id":[
+{passage:"Minat baca masyarakat Indonesia masih tergolong rendah. Berdasarkan survei UNESCO, Indonesia berada di peringkat ke-60 dari 61 negara yang disurvei. Rendahnya minat baca disebabkan oleh beberapa faktor, di antaranya kurangnya fasilitas perpustakaan yang memadai, keterbatasan akses buku di daerah terpencil, serta budaya literasi yang belum kuat.",q:"Gagasan pokok paragraf di atas adalah...",opts:["Survei UNESCO tentang minat baca","Rendahnya minat baca masyarakat Indonesia","Kurangnya fasilitas perpustakaan","Keterbatasan akses buku di daerah terpencil","Indonesia peringkat ke-60"],ans:1,exp:"Gagasan pokok adalah ide yang dibahas seluruh paragraf, yaitu rendahnya minat baca masyarakat Indonesia."},
+{q:"Kata 'daring' memiliki makna yang sama dengan...",opts:["Luring","Online","Offline","Langsung","Tatap muka"],ans:1,exp:"'Daring' (dalam jaringan) adalah padanan resmi bahasa Indonesia untuk 'online'."},
+{q:"Kalimat yang menggunakan ejaan baku yang benar adalah...",opts:["Saya sudah meng-upload berkas tersebut","Ibu membeli sayur di pasar tradisionil","Anak-anak bermain di lapangan dengan riang","Mereka mensyukuri segala nikmat Tuhan","Para siswa-siswi mengikuti upacara bendera"],ans:2,exp:"'Anak-anak bermain di lapangan dengan riang' menggunakan ejaan baku yang benar. 'Tradisionil' salah (harusnya tradisional), dll."},
+{passage:"Generasi muda Indonesia perlu meningkatkan kemampuan literasi digital. Di era serba digital ini, kemampuan untuk menganalisis, mengevaluasi, dan menciptakan konten digital merupakan kompetensi yang sangat krusial.",q:"Kata 'krusial' bermakna...",opts:["Tambahan","Pelengkap","Sangat penting","Biasa saja","Menentukan akhir"],ans:2,exp:"'Krusial' berasal dari bahasa Inggris 'crucial', artinya sangat penting atau menentukan."},
+{q:"Manakah penulisan kata depan yang tepat?",opts:["Buku itu ada didalam tas","Kami pergi ke Surabaya","Adik bermain dirumah","Ia datang dari pada arah barat","Pohon itu tumbuh didekat sungai"],ans:1,exp:"Kata depan 'ke' ditulis terpisah dari kata berikutnya: 'ke Surabaya'. Kata depan 'di' juga harus dipisah: 'di dalam', 'di rumah', dll."},
+{passage:"Pendidikan karakter merupakan pondasi utama dalam membentuk generasi penerus bangsa yang berakhlak mulia. Tanpa karakter yang kuat, prestasi akademik semata tidak akan mampu membawa bangsa ini ke arah kemajuan yang sesungguhnya.",q:"Pernyataan yang sesuai dengan isi teks adalah...",opts:["Prestasi akademik lebih penting dari karakter","Karakter dan akademik tidak perlu seimbang","Karakter yang kuat adalah landasan penting bagi kemajuan bangsa","Generasi muda cukup fokus pada nilai ujian","Pendidikan karakter tidak relevan di era modern"],ans:2,exp:"Teks menyatakan bahwa karakter adalah pondasi utama dan tanpa karakter yang kuat, prestasi akademik saja tidak cukup."},
+{q:"Kalimat manakah yang merupakan kalimat efektif?",opts:["Para hadirin sekalian dipersilakan untuk duduk","Dia sangat amat lelah sekali","Karena dia sakit, maka dia tidak masuk sekolah","Semua peserta lomba dipersilakan mendaftar","Bagi para peserta yang belum mendaftar agar segera mendaftar"],ans:3,exp:"'Semua peserta lomba dipersilakan mendaftar' adalah kalimat efektif — tidak ada kata berlebihan atau rancu."},
+{passage:"Revolusi Industri 4.0 ditandai dengan otomatisasi dan pertukaran data dalam teknologi manufaktur. Era ini mencakup sistem siber-fisik, Internet of Things (IoT), komputasi awan, dan komputasi kognitif.",q:"Istilah 'Internet of Things' dalam teks tersebut mengacu pada...",opts:["Jaringan internet biasa","Kumpulan perangkat yang terhubung melalui internet","Sistem komputasi awan saja","Perangkat lunak manufaktur","Platform media sosial"],ans:1,exp:"IoT (Internet of Things) merujuk pada kumpulan perangkat fisik yang terhubung dan saling bertukar data melalui internet."},
+{q:"Penulisan judul karangan yang benar menurut EYD adalah...",opts:["Cara Meningkatkan Minat Baca di indonesia","cara meningkatkan minat baca di Indonesia","Cara Meningkatkan Minat Baca di Indonesia","CARA MENINGKATKAN MINAT BACA DI INDONESIA","Cara meningkatkan Minat baca di Indonesia"],ans:2,exp:"Menurut EYD, judul ditulis dengan huruf kapital pada setiap kata, kecuali kata tugas seperti 'di', 'ke', 'dari', 'yang', 'dan'."},
+{passage:"Sampah plastik menjadi permasalahan serius bagi lingkungan hidup. Plastik membutuhkan ratusan tahun untuk terurai, sehingga penumpukan sampah plastik di lautan mengancam ekosistem laut. Gerakan pengurangan penggunaan plastik sekali pakai perlu terus digalakkan.",q:"Simpulan yang tepat dari paragraf tersebut adalah...",opts:["Plastik adalah bahan yang sangat berguna","Sampah plastik tidak berbahaya bagi laut","Pengurangan plastik sekali pakai penting untuk menjaga lingkungan","Ekosistem laut tidak terpengaruh oleh sampah","Plastik dapat terurai dalam waktu singkat"],ans:2,exp:"Paragraf menyimpulkan bahwa sampah plastik adalah masalah serius dan gerakan pengurangan plastik sekali pakai perlu didorong."},
+{q:"Kata berimbuhan yang tepat untuk mengisi titik-titik: 'Para pelajar harus ... semangat belajar dengan sungguh-sungguh.' adalah...",opts:["memupukkan","dipupuk","pupuk","memupuk","terpupuk"],ans:3,exp:"'Memupuk' adalah bentuk kata kerja aktif dengan imbuhan me- yang tepat: 'harus memupuk semangat belajar'."},
+{passage:"Bahasa adalah cerminan budaya suatu bangsa. Melalui bahasa, nilai-nilai, norma, dan kearifan lokal diwariskan dari generasi ke generasi. Oleh karena itu, menjaga kelestarian bahasa daerah sama pentingnya dengan menjaga kelestarian budaya.",q:"Ide pokok paragraf tersebut adalah...",opts:["Bahasa tidak penting bagi budaya","Bahasa adalah cerminan budaya dan perlu dilestarikan","Norma diwariskan tanpa bahasa","Bahasa daerah sudah punah","Generasi muda tidak perlu bahasa daerah"],ans:1,exp:"Ide pokok paragraf adalah bahasa sebagai cerminan budaya dan pentingnya menjaga kelestarian bahasa daerah."},
+{q:"Kalimat pasif yang benar adalah...",opts:["Buku itu saya baca kemarin","Saya membaca buku itu kemarin","Buku itu dibaca oleh saya kemarin","Saya sudah baca buku itu","Buku itu membaca saya kemarin"],ans:2,exp:"Kalimat pasif: 'Buku itu dibaca oleh saya kemarin' — subjek (buku) dikenai pekerjaan dan menggunakan kata kerja pasif 'dibaca'."},
+{passage:"Urbanisasi yang tidak terkendali menyebabkan berbagai permasalahan di kota besar, seperti kemacetan, permukiman padat, dan meningkatnya angka pengangguran. Pemerintah perlu mengembangkan daerah pedesaan agar masyarakat tidak berbondong-bondong pindah ke kota.",q:"Solusi yang disarankan penulis dalam teks tersebut adalah...",opts:["Membatasi jumlah penduduk kota","Menutup akses jalan ke kota","Mengembangkan daerah pedesaan","Melarang urbanisasi sepenuhnya","Menambah transportasi di kota"],ans:2,exp:"Penulis menyarankan pengembangan daerah pedesaan sebagai solusi agar masyarakat tidak perlu pindah ke kota."},
+{q:"Penggunaan tanda baca yang benar terdapat pada kalimat...",opts:["Ibu membeli: apel, jeruk, dan mangga","Ibu membeli, apel jeruk dan mangga","Ibu membeli apel, jeruk, dan mangga","Ibu; membeli apel jeruk dan mangga","Ibu membeli apel jeruk, dan mangga"],ans:2,exp:"Penggunaan koma yang benar pada rincian: 'Ibu membeli apel, jeruk, dan mangga'."},
+{q:"Bentuk kata ulang yang bermakna 'berpura-pura menjadi' adalah...",opts:["berlari-lari","sayur-mayur","kuda-kudaan","buah-buahan","warna-warni"],ans:2,exp:"'Kuda-kudaan' adalah kata ulang yang bermakna berpura-pura atau tiruan dari sesuatu (bermain kuda-kudaan = berpura-pura menjadi kuda)."},
+{passage:"Keberagaman budaya Indonesia merupakan kekayaan yang tak ternilai. Dengan lebih dari 300 suku bangsa dan 700 bahasa daerah, Indonesia menjadi salah satu negara dengan keanekaragaman budaya terbesar di dunia.",q:"Fakta yang terdapat dalam paragraf tersebut adalah...",opts:["Indonesia memiliki budaya terbaik di dunia","Keberagaman budaya Indonesia tidak berguna","Indonesia memiliki lebih dari 300 suku bangsa dan 700 bahasa daerah","Semua suku bangsa di Indonesia berbahasa sama","Indonesia tidak perlu menjaga budayanya"],ans:2,exp:"Fakta dalam teks adalah pernyataan yang dapat diverifikasi: Indonesia memiliki lebih dari 300 suku bangsa dan 700 bahasa daerah."},
+{q:"Makna kata 'konkret' yang tepat adalah...",opts:["Bersifat abstrak dan tidak nyata","Bersifat nyata dan dapat dilihat/diraba","Sesuatu yang sulit dipahami","Ide yang bersifat imajiner","Konsep yang kompleks"],ans:1,exp:"'Konkret' berarti sesuatu yang nyata, dapat dilihat, diraba, atau dirasakan secara langsung — lawan dari abstrak."},
+{passage:"Teknologi kecerdasan buatan (AI) semakin berkembang pesat dan mulai merambah berbagai bidang kehidupan, mulai dari kesehatan, pendidikan, hingga industri. Namun, perkembangan ini juga menimbulkan kekhawatiran akan penggantian tenaga manusia oleh mesin.",q:"Pernyataan yang TIDAK sesuai dengan isi teks adalah...",opts:["AI berkembang dengan pesat","AI merambah bidang kesehatan dan pendidikan","AI menimbulkan kekhawatiran akan penggantian tenaga manusia","AI sudah menggantikan semua tenaga manusia","AI juga memasuki bidang industri"],ans:3,exp:"Teks hanya menyatakan adanya 'kekhawatiran' akan penggantian tenaga manusia — bukan menyatakan bahwa AI sudah menggantikan semua tenaga manusia."},
+{q:"Sinonim kata 'inovasi' adalah...",opts:["Tradisi","Pembaharuan","Kemunduran","Kebiasaan","Rutinitas"],ans:1,exp:"'Inovasi' berarti pembaruan atau penemuan baru. Sinonimnya adalah 'pembaharuan' atau 'terobosan baru'."}
+],
+"lit-en":[
+{passage:"Climate change is one of the most pressing issues of our time. Rising global temperatures have led to more frequent extreme weather events, melting polar ice caps, and rising sea levels. Scientists warn that without significant reductions in greenhouse gas emissions, the consequences could be catastrophic.",q:"What is the main concern expressed in the passage?",opts:["The beauty of polar ice caps","The serious threat of climate change","The history of global temperatures","Extreme weather is becoming rarer","Scientists disagree about climate"],ans:1,exp:"The passage focuses on climate change as 'one of the most pressing issues' — the main concern is its serious threat."},
+{q:"Choose the sentence with correct grammar:",opts:["She don't like coffee","They was very tired after the trip","He has been working here since 2020","We are go to the market tomorrow","I have saw that movie last week"],ans:2,exp:"'He has been working here since 2020' uses present perfect continuous correctly. Others contain grammatical errors."},
+{passage:"Despite facing numerous obstacles, Maria persisted in her studies. She worked part-time to support herself while maintaining excellent academic performance.",q:"The word 'persisted' is closest in meaning to...",opts:["Gave up","Continued determinedly","Started freshly","Complained loudly","Moved quickly"],ans:1,exp:"'Persist' means to continue despite difficulties. Maria 'continued determinedly' with her studies."},
+{q:"Which sentence correctly uses a type 2 conditional?",opts:["If it rains, we will stay inside","If I were rich, I would travel the world","If she studied, she passed the exam","If he eats more, he is healthier","If they run fast, they win the race"],ans:1,exp:"Type 2 conditional: If + past simple, would + bare infinitive. 'If I were rich, I would travel the world' is correct."},
+{passage:"The rapid advancement of artificial intelligence has sparked both excitement and concern. Proponents argue that AI can solve complex problems and increase productivity, while critics worry about job displacement and ethical implications.",q:"According to the passage, what do critics of AI worry about?",opts:["AI solving complex problems","Increased productivity","Job displacement and ethical issues","The rapid pace of AI development","AI being too expensive"],ans:2,exp:"Critics 'worry about job displacement and ethical implications' — clearly stated in the passage."},
+{q:"Choose the correct passive voice sentence:",opts:["The manager approved the report","The report was approved by the manager","The manager has approved the report","The report approves by the manager","The manager is approve the report"],ans:1,exp:"Passive voice: subject + to be + past participle. 'The report was approved by the manager' is correct."},
+{passage:"Reading regularly has been shown to improve vocabulary, enhance critical thinking, and reduce stress. Studies suggest that even 20 minutes of reading per day can have significant cognitive benefits.",q:"What is the main benefit of reading mentioned in the passage?",opts:["It helps you sleep better","It improves vocabulary, critical thinking, and reduces stress","It makes you more popular","It replaces physical exercise","It guarantees academic success"],ans:1,exp:"The passage explicitly states reading improves vocabulary, critical thinking, and reduces stress."},
+{q:"Select the word that best completes the sentence: 'The scientist made a remarkable ___ that changed modern medicine.'",opts:["discover","discovered","discovery","discovering","discoverer"],ans:2,exp:"After 'a' + adjective, a noun is needed. 'Discovery' is the noun form of 'discover'."},
+{passage:"Deforestation remains a critical environmental problem. Every year, millions of hectares of forest are cleared for agriculture, logging, and urban development. This destruction threatens biodiversity and contributes to global warming.",q:"Which of the following best summarizes the passage?",opts:["Forests are not important for the environment","Deforestation has no effect on climate","Deforestation is a serious problem threatening biodiversity and contributing to global warming","Urban development always benefits the environment","Logging should be increased for economic growth"],ans:2,exp:"The passage describes deforestation as a 'critical environmental problem' that threatens biodiversity and contributes to global warming."},
+{q:"Which sentence uses the superlative form correctly?",opts:["She is more tall than her sister","He is the most tallest in the class","This is the most interesting book I've ever read","That was the more difficult exam","She runs most fast of all"],ans:2,exp:"Superlative of multi-syllable adjectives: 'most + adjective'. 'The most interesting book' is correct."},
+{passage:"Volunteering offers many benefits beyond helping others. Volunteers often develop new skills, expand their social networks, and gain a sense of purpose. Research shows that volunteering can also improve mental health and well-being.",q:"According to the passage, volunteering can improve...",opts:["Only physical health","Only social skills","Mental health and overall well-being","Financial stability","Academic performance"],ans:2,exp:"The passage states research shows volunteering can 'improve mental health and well-being'."},
+{q:"Identify the correct sentence:",opts:["I have went to Paris last year","She has eaten breakfast already","He didn't came to the party","They was playing football","We hasn't finished the project"],ans:1,exp:"'She has eaten breakfast already' uses present perfect correctly (have/has + past participle). Others have grammatical errors."},
+{passage:"Social media has transformed the way people communicate and consume information. While it enables instant communication globally, it also poses risks such as misinformation, privacy concerns, and addiction to digital content.",q:"What is a risk of social media mentioned in the passage?",opts:["Improving communication","Instant global connection","Spreading misinformation","Creating new languages","Reducing screen time"],ans:2,exp:"The passage mentions risks including 'misinformation, privacy concerns, and addiction' — misinformation is one of them."},
+{q:"Choose the correct preposition: 'She has been interested ___ music since childhood.'",opts:["at","on","in","of","for"],ans:2,exp:"The correct expression is 'interested in' — 'in' is the preposition that follows 'interested'."},
+{passage:"The ocean covers about 71% of Earth's surface and contains 97% of the planet's water. Despite its vastness, only about 20% of the ocean has been mapped and explored by humans. The deep sea remains one of the least understood environments on Earth.",q:"What does the passage imply about the ocean?",opts:["It has been fully explored by scientists","Most of it is still unknown to humans","It covers less than half of Earth's surface","All ocean water is suitable for drinking","The deep sea has no living organisms"],ans:1,exp:"The passage states only 20% has been mapped — implying most of the ocean (80%) is still unknown to humans."},
+{q:"Which option correctly uses reported speech? Direct: 'I am tired,' she said.",opts:["She said that she is tired","She said that she was tired","She said that I am tired","She told she was tired","She said she is been tired"],ans:1,exp:"In reported speech, present tense shifts to past: 'I am' becomes 'she was'. 'She said that she was tired' is correct."},
+{passage:"Urbanization is accelerating worldwide, with more than half of the global population now living in cities. This trend brings economic opportunities but also challenges such as housing shortages, traffic congestion, and environmental degradation.",q:"Which challenge of urbanization is NOT mentioned in the passage?",opts:["Housing shortages","Traffic congestion","Environmental degradation","Unemployment rates","Economic opportunities"],ans:3,exp:"The passage mentions housing shortages, traffic congestion, and environmental degradation. Unemployment rates are not mentioned."},
+{q:"Choose the sentence with the correct use of articles:",opts:["She is an university student","I saw a elephant at the zoo","He is the best player in a team","A cat is sitting on the roof","She bought an apple and a orange"],ans:3,exp:"'A cat is sitting on the roof' uses articles correctly. 'An university' should be 'a university' (u sounds like 'yu'), 'a elephant' should be 'an elephant'."},
+{passage:"Emotional intelligence (EQ) refers to the ability to recognize, understand, and manage one's own emotions, as well as the emotions of others. Research suggests that high EQ can lead to better relationships, improved performance at work, and greater life satisfaction.",q:"According to the passage, a benefit of high emotional intelligence is...",opts:["Lower academic scores","Greater life satisfaction and better relationships","Increased physical strength","Reduced need for social interaction","Higher IQ scores"],ans:1,exp:"The passage states high EQ leads to 'better relationships' and 'greater life satisfaction'."},
+{q:"Select the word with the correct spelling:",opts:["accomodation","recieve","occurence","necessary","seperately"],ans:3,exp:"'Necessary' is spelled correctly (one 'c', two 's'). Others: accommodation, receive, occurrence, separately."}
+]
+};
+
+const MODULES = {"tps-pu":"🧠 Penalaran Umum","tps-pk":"📐 Pengetahuan Kuantitatif","lit-id":"📖 Literasi Bahasa Indonesia","lit-en":"🌐 Literasi Bahasa Inggris"};
+const LABELS = ['A','B','C','D','E'];
+let selectedModule=null,questions=[],currentQ=0,selectedAnswer=null,answered=false;
+let results=[],timer=null,timeLeft=900;
+
+function selectModule(el){
+  document.querySelectorAll('.module-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedModule=el.dataset.module;
+  document.getElementById('btn-start').disabled=false;
+}
+
+function startQuiz(){
+  questions=[...QUESTIONS[selectedModule]];
+  currentQ=0;results=[];
+  for(let i=0;i<questions.length;i++) results.push({selected:null,isCorrect:false,skipped:false,locked:false});
+  showScreen('screen-quiz');
+  buildDots();
+  showQuestion();
+  startTimer();
+}
+
+function buildDots(){
+  const c=document.getElementById('q-nav-dots');
+  c.innerHTML='';
+  for(let i=0;i<questions.length;i++){
+    const d=document.createElement('div');
+    d.className='q-dot'+(i===0?' current':'');
+    d.textContent=i+1;
+    d.dataset.idx=i;
+    d.onclick=()=>jumpTo(i);
+    c.appendChild(d);
+  }
+}
+
+function updateDots(){
+  document.querySelectorAll('.q-dot').forEach((d,i)=>{
+    d.className='q-dot';
+    if(i===currentQ) d.classList.add('current');
+    else if(results[i].locked){
+      if(results[i].skipped) d.classList.add('skipped');
+      else if(results[i].isCorrect) d.classList.add('answered-correct');
+      else d.classList.add('answered-wrong');
+    }
+  });
+}
+
+function jumpTo(i){
+  currentQ=i;
+  showQuestion();
+  updateDots();
+}
+
+function startTimer(){
+  timeLeft=900;
+  clearInterval(timer);
+  updateTimerDisplay();
+  timer=setInterval(()=>{
+    timeLeft--;
+    updateTimerDisplay();
+    if(timeLeft<=0){clearInterval(timer);endQuiz();}
+  },1000);
+}
+
+function updateTimerDisplay(){
+  const m=Math.floor(timeLeft/60).toString().padStart(2,'0');
+  const s=(timeLeft%60).toString().padStart(2,'0');
+  document.getElementById('timer-text').textContent=`${m}:${s}`;
+  document.getElementById('timer-wrap').classList.toggle('warning',timeLeft<=120);
+}
+
+function showQuestion(){
+  const q=questions[currentQ];
+  const r=results[currentQ];
+  answered=r.locked;
+  selectedAnswer=r.selected;
+
+  document.getElementById('q-num').textContent=`Soal ${currentQ+1} dari ${questions.length}`;
+  document.getElementById('progress-bar').style.width=`${((currentQ+1)/questions.length)*100}%`;
+  document.getElementById('quiz-module-label').textContent=MODULES[selectedModule]||selectedModule;
+
+  const passageEl=document.getElementById('q-passage');
+  if(q.passage){passageEl.textContent=q.passage;passageEl.style.display='block';}
+  else passageEl.style.display='none';
+
+  document.getElementById('q-text').textContent=q.q;
+  const fb=document.getElementById('feedback-box');
+  fb.style.display='none';
+
+  const oc=document.getElementById('options');
+  oc.innerHTML='';
+  q.opts.forEach((opt,i)=>{
+    const btn=document.createElement('button');
+    btn.className='option-btn';
+    btn.innerHTML=`<span class="opt-key">${LABELS[i]}.</span><span>${opt}</span>`;
+    if(r.locked){
+      btn.disabled=true;
+      if(i===q.ans) btn.classList.add('correct');
+      if(i===r.selected&&!r.isCorrect) btn.classList.add('wrong');
+    } else {
+      if(i===r.selected) btn.classList.add('selected');
+      btn.onclick=()=>selectAnswer(i);
+    }
+    oc.appendChild(btn);
+  });
+
+  if(r.locked&&!r.skipped){
+    fb.className=`feedback-box ${r.isCorrect?'correct':'wrong'}`;
+    fb.innerHTML=(r.isCorrect?'<strong>✓ Benar!</strong> ':'<strong>✗ Kurang tepat.</strong> ')+(q.exp||'');
+    fb.style.display='block';
+  }
+
+  const isLast=currentQ===questions.length-1;
+  const allDone=results.every(r=>r.locked);
+
+  document.getElementById('btn-prev').disabled=currentQ===0;
+  document.getElementById('btn-confirm').disabled=!r.locked&&selectedAnswer===null;
+  document.getElementById('btn-skip').disabled=r.locked;
+  document.getElementById('btn-skip').textContent=r.locked?(isLast?'Lihat Hasil →':'Soal Berikutnya →'):'Lewati';
+  document.getElementById('btn-skip').onclick=r.locked?()=>nextAuto():()=>skipQuestion();
+
+  if(allDone){
+    document.getElementById('btn-skip').textContent='Lihat Hasil →';
+    document.getElementById('btn-skip').disabled=false;
+    document.getElementById('btn-skip').onclick=()=>endQuiz();
+  }
+
+  updateDots();
+}
+
+function selectAnswer(i){
+  if(answered) return;
+  selectedAnswer=i;
+  results[currentQ].selected=i;
+  document.querySelectorAll('.option-btn').forEach((b,idx)=>b.classList.toggle('selected',idx===i));
+  document.getElementById('btn-confirm').disabled=false;
+}
+
+function confirmAnswer(){
+  if(selectedAnswer===null||answered) return;
+  const q=questions[currentQ];
+  const correct=selectedAnswer===q.ans;
+  results[currentQ].isCorrect=correct;
+  results[currentQ].locked=true;
+  results[currentQ].skipped=false;
+  answered=true;
+
+  const btns=document.querySelectorAll('.option-btn');
+  btns.forEach((b,i)=>{
+    b.disabled=true;
+    if(i===q.ans) b.classList.add('correct');
+    if(i===selectedAnswer&&!correct) b.classList.add('wrong');
+    if(i===selectedAnswer) b.classList.remove('selected');
+  });
+
+  const fb=document.getElementById('feedback-box');
+  fb.className=`feedback-box ${correct?'correct':'wrong'}`;
+  fb.innerHTML=(correct?'<strong>✓ Benar!</strong> ':'<strong>✗ Kurang tepat.</strong> ')+(q.exp||'');
+  fb.style.display='block';
+  document.getElementById('btn-confirm').disabled=true;
+  document.getElementById('btn-skip').disabled=false;
+  document.getElementById('btn-skip').textContent=currentQ<questions.length-1?'Soal Berikutnya →':'Lihat Hasil →';
+  document.getElementById('btn-skip').onclick=()=>nextAuto();
+  updateDots();
+}
+
+function skipQuestion(){
+  results[currentQ].locked=true;
+  results[currentQ].skipped=true;
+  results[currentQ].isCorrect=false;
+  nextAuto();
+}
+
+function nextAuto(){
+  const next=results.findIndex((r,i)=>i>currentQ&&!r.locked);
+  if(next!==-1){currentQ=next;showQuestion();}
+  else {
+    const any=results.findIndex(r=>!r.locked);
+    if(any!==-1){currentQ=any;showQuestion();}
+    else endQuiz();
+  }
+}
+
+function prevQuestion(){
+  if(currentQ>0){currentQ--;showQuestion();}
+}
+
+function endQuiz(){
+  clearInterval(timer);
+  const correct=results.filter(r=>r.isCorrect).length;
+  const wrong=results.filter(r=>r.locked&&!r.isCorrect&&!r.skipped).length;
+  const skip=results.filter(r=>r.skipped||!r.locked).length;
+  const pct=Math.round((correct/questions.length)*100);
+
+  document.getElementById('r-score').textContent=correct;
+  document.getElementById('r-correct').textContent=correct;
+  document.getElementById('r-wrong').textContent=wrong;
+  document.getElementById('r-skip').textContent=skip;
+  document.getElementById('r-pct').textContent=pct+'%';
+  document.getElementById('r-pct2').textContent=pct+'%';
+  setTimeout(()=>document.getElementById('score-bar').style.width=pct+'%',100);
+
+  const grades=[
+    {min:18,t:'Luar Biasa! 🏆',s:'Nilai sempurna, kamu siap SNBT!'},
+    {min:16,t:'Sangat Bagus! 🎯',s:'Hampir sempurna, pertahankan!'},
+    {min:13,t:'Bagus! ✨',s:'Di atas rata-rata, terus tingkatkan!'},
+    {min:10,t:'Cukup Baik 📚',s:'Sudah lumayan, perlu latihan lebih!'},
+    {min:0,t:'Semangat Belajar! 💪',s:'Jangan menyerah, pelajari lagi materinya!'}
+  ];
+  const g=grades.find(g=>correct>=g.min);
+  document.getElementById('r-title').textContent=g.t;
+  document.getElementById('r-sub').textContent=g.s;
+
+  const rl=document.getElementById('review-list');
+  rl.innerHTML='';
+  results.forEach((r,i)=>{
+    const q=questions[i];
+    const div=document.createElement('div');
+    const isSkipped=r.skipped||!r.locked;
+    div.className=`review-item ${isSkipped?'':r.isCorrect?'correct-item':'wrong-item'}`;
+    const shortQ=q.q.length>90?q.q.slice(0,90)+'...':q.q;
+    let ansHTML='';
+    if(isSkipped) ansHTML=`<div class="review-ans">Dilewati · Jawaban benar: <span class="r-correct">${LABELS[q.ans]}. ${q.opts[q.ans]}</span></div>`;
+    else if(r.isCorrect) ansHTML=`<div class="review-ans"><span class="r-correct">✓ ${LABELS[r.selected]}. ${q.opts[r.selected]}</span> — Benar!</div>`;
+    else ansHTML=`<div class="review-ans">Kamu: <span class="r-wrong">${LABELS[r.selected]}. ${q.opts[r.selected]}</span> · Benar: <span class="r-correct">${LABELS[q.ans]}. ${q.opts[q.ans]}</span></div>`;
+    div.innerHTML=`<div class="review-q"><strong>No.${i+1}</strong> ${shortQ}</div>${ansHTML}`;
+    if(q.exp&&!isSkipped){
+      const e=document.createElement('div');
+      e.style.cssText='font-size:12px;color:var(--color-text-secondary);margin-top:6px;line-height:1.55;';
+      e.textContent='💡 '+q.exp;
+      div.appendChild(e);
+    }
+    rl.appendChild(div);
+  });
+  showScreen('screen-result');
+}
+
+function retryQuiz(){
+  document.getElementById('btn-start').disabled=true;
+  document.querySelectorAll('.module-card').forEach(c=>c.classList.remove('selected'));
+  selectedModule=null;
+  showScreen('screen-start');
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+</script>

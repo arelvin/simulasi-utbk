@@ -1,0 +1,490 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); }
+  .wrapper { padding: 1.5rem 0; max-width: 680px; }
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* START SCREEN */
+  .start-header { text-align: center; padding: 2rem 1rem 1.5rem; }
+  .badge { display: inline-flex; align-items: center; gap: 6px; background: #EAF3DE; color: #3B6D11; font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: 20px; margin-bottom: 1rem; }
+  .start-title { font-size: 22px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 8px; }
+  .start-sub { font-size: 14px; color: var(--color-text-secondary); margin-bottom: 1.5rem; }
+  .module-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; }
+  .module-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+  .module-card:hover { border-color: var(--color-border-secondary); background: var(--color-background-secondary); }
+  .module-card.selected { border: 2px solid #185FA5; background: #E6F1FB; }
+  .module-card .m-icon { font-size: 22px; margin-bottom: 6px; display: block; }
+  .module-card .m-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 2px; }
+  .module-card .m-desc { font-size: 12px; color: var(--color-text-secondary); }
+  .module-card.selected .m-title { color: #185FA5; }
+  .btn-start { width: 100%; padding: 12px; background: #185FA5; color: #fff; border: none; border-radius: var(--border-radius-md); font-size: 15px; font-weight: 500; cursor: pointer; transition: background 0.15s; }
+  .btn-start:hover { background: #0C447C; }
+  .btn-start:disabled { background: var(--color-background-secondary); color: var(--color-text-tertiary); cursor: not-allowed; }
+
+  /* QUIZ SCREEN */
+  .quiz-top { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); margin-bottom: 1rem; }
+  .quiz-module-label { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); }
+  .timer-wrap { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
+  .timer-wrap.warning { color: #E24B4A; }
+  .progress-bar-outer { height: 4px; background: var(--color-border-tertiary); border-radius: 2px; margin-bottom: 1.25rem; }
+  .progress-bar-inner { height: 4px; background: #185FA5; border-radius: 2px; transition: width 0.3s; }
+  .q-num { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 6px; }
+  .q-text { font-size: 15px; color: var(--color-text-primary); line-height: 1.65; margin-bottom: 1.25rem; }
+  .q-passage { background: var(--color-background-secondary); border-left: 3px solid #185FA5; padding: 10px 14px; font-size: 13px; line-height: 1.65; color: var(--color-text-secondary); border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0; margin-bottom: 1.25rem; }
+  .options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.5rem; }
+  .option-btn { display: flex; align-items: flex-start; gap: 10px; padding: 11px 14px; background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); cursor: pointer; text-align: left; transition: border-color 0.12s, background 0.12s; font-size: 14px; color: var(--color-text-primary); line-height: 1.5; }
+  .option-btn:hover:not(:disabled) { border-color: var(--color-border-secondary); background: var(--color-background-secondary); }
+  .option-btn .opt-key { font-weight: 500; min-width: 18px; color: var(--color-text-secondary); }
+  .option-btn.selected { border: 2px solid #185FA5; background: #E6F1FB; }
+  .option-btn.selected .opt-key { color: #185FA5; }
+  .option-btn.correct { border: 2px solid #0F6E56; background: #E1F5EE; }
+  .option-btn.correct .opt-key { color: #0F6E56; }
+  .option-btn.wrong { border: 2px solid #E24B4A; background: #FCEBEB; }
+  .option-btn.wrong .opt-key { color: #E24B4A; }
+  .option-btn:disabled { cursor: default; }
+  .feedback-box { padding: 10px 14px; border-radius: var(--border-radius-md); font-size: 13px; line-height: 1.6; margin-bottom: 1.25rem; }
+  .feedback-box.correct { background: #E1F5EE; color: #085041; border: 0.5px solid #5DCAA5; }
+  .feedback-box.wrong { background: #FCEBEB; color: #501313; border: 0.5px solid #F09595; }
+  .nav-row { display: flex; gap: 8px; }
+  .btn-nav { flex: 1; padding: 10px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); font-size: 14px; font-weight: 500; cursor: pointer; background: var(--color-background-primary); color: var(--color-text-primary); transition: background 0.12s; }
+  .btn-nav:hover { background: var(--color-background-secondary); }
+  .btn-nav.primary { background: #185FA5; border-color: #185FA5; color: #fff; }
+  .btn-nav.primary:hover { background: #0C447C; }
+
+  /* RESULT SCREEN */
+  .result-hero { text-align: center; padding: 2rem 1rem 1.5rem; }
+  .score-circle { width: 96px; height: 96px; border-radius: 50%; background: #E6F1FB; border: 3px solid #185FA5; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; flex-direction: column; }
+  .score-num { font-size: 26px; font-weight: 500; color: #185FA5; }
+  .score-max { font-size: 13px; color: var(--color-text-secondary); }
+  .result-title { font-size: 20px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 6px; }
+  .result-sub { font-size: 14px; color: var(--color-text-secondary); margin-bottom: 1.5rem; }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 1.5rem; }
+  .stat-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px; text-align: center; }
+  .stat-val { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
+  .stat-lbl { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+  .stat-val.green { color: #0F6E56; }
+  .stat-val.red { color: #A32D2D; }
+  .review-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.5rem; }
+  .review-item { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 12px 14px; }
+  .review-item.correct-item { border-left: 3px solid #0F6E56; }
+  .review-item.wrong-item { border-left: 3px solid #E24B4A; }
+  .review-q { font-size: 13px; color: var(--color-text-primary); margin-bottom: 6px; line-height: 1.55; }
+  .review-ans { font-size: 12px; color: var(--color-text-secondary); }
+  .review-ans span { font-weight: 500; }
+  .review-ans .r-correct { color: #0F6E56; }
+  .review-ans .r-wrong { color: #E24B4A; }
+  .btn-retry { width: 100%; padding: 12px; background: #185FA5; color: #fff; border: none; border-radius: var(--border-radius-md); font-size: 15px; font-weight: 500; cursor: pointer; }
+  .btn-retry:hover { background: #0C447C; }
+  .section-label { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.04em; }
+</style>
+
+<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">Simulasi Soal UTBK SNBT interaktif dengan pilihan modul TPS dan Literasi</h2>
+
+<div class="wrapper">
+  <!-- START SCREEN -->
+  <div class="screen active" id="screen-start">
+    <div class="start-header">
+      <div class="badge"><i class="ti ti-school" aria-hidden="true"></i> SNBT 2025</div>
+      <div class="start-title">Simulasi UTBK SNBT</div>
+      <div class="start-sub">Pilih modul yang ingin kamu latih, lalu mulai ujian. Setiap sesi berisi 5 soal dengan timer aktif.</div>
+    </div>
+    <div class="section-label">Pilih Modul</div>
+    <div class="module-grid" id="module-grid">
+      <div class="module-card" data-module="tps-penalaran-umum" onclick="selectModule(this)">
+        <span class="m-icon">🧠</span>
+        <div class="m-title">Penalaran Umum</div>
+        <div class="m-desc">TPS — Logika, analisis, & argumen</div>
+      </div>
+      <div class="module-card" data-module="tps-pu-kuantitatif" onclick="selectModule(this)">
+        <span class="m-icon">📐</span>
+        <div class="m-title">Pengetahuan Kuantitatif</div>
+        <div class="m-desc">TPS — Matematika & numerasi</div>
+      </div>
+      <div class="module-card" data-module="literasi-indonesia" onclick="selectModule(this)">
+        <span class="m-icon">📖</span>
+        <div class="m-title">Literasi Bahasa Indonesia</div>
+        <div class="m-desc">Pemahaman wacana & kebahasaan</div>
+      </div>
+      <div class="module-card" data-module="literasi-inggris" onclick="selectModule(this)">
+        <span class="m-icon">🌐</span>
+        <div class="m-title">Literasi Bahasa Inggris</div>
+        <div class="m-desc">Reading comprehension & grammar</div>
+      </div>
+    </div>
+    <button class="btn-start" id="btn-start" disabled onclick="startQuiz()">Mulai Latihan ↗</button>
+  </div>
+
+  <!-- QUIZ SCREEN -->
+  <div class="screen" id="screen-quiz">
+    <div class="quiz-top">
+      <div class="quiz-module-label" id="quiz-module-label">—</div>
+      <div class="timer-wrap" id="timer-wrap"><i class="ti ti-clock" aria-hidden="true"></i> <span id="timer-text">05:00</span></div>
+    </div>
+    <div class="progress-bar-outer"><div class="progress-bar-inner" id="progress-bar" style="width:0%"></div></div>
+    <div class="q-num" id="q-num">Soal 1 dari 5</div>
+    <div id="q-passage" class="q-passage" style="display:none"></div>
+    <div class="q-text" id="q-text"></div>
+    <div class="options" id="options"></div>
+    <div id="feedback-box" class="feedback-box" style="display:none"></div>
+    <div class="nav-row">
+      <button class="btn-nav" onclick="skipQuestion()" id="btn-skip">Lewati</button>
+      <button class="btn-nav primary" onclick="confirmAnswer()" id="btn-confirm" disabled>Konfirmasi Jawaban</button>
+    </div>
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div class="screen" id="screen-result">
+    <div class="result-hero">
+      <div class="score-circle"><div class="score-num" id="r-score">0</div><div class="score-max">dari 5</div></div>
+      <div class="result-title" id="r-title">—</div>
+      <div class="result-sub" id="r-sub">—</div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-val green" id="r-correct">0</div><div class="stat-lbl">Benar</div></div>
+      <div class="stat-card"><div class="stat-val red" id="r-wrong">0</div><div class="stat-lbl">Salah</div></div>
+      <div class="stat-card"><div class="stat-val" id="r-skip">0</div><div class="stat-lbl">Dilewati</div></div>
+    </div>
+    <div class="section-label">Pembahasan</div>
+    <div class="review-list" id="review-list"></div>
+    <button class="btn-retry" onclick="retryQuiz()">Coba Modul Lain ↗</button>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = {
+  "tps-penalaran-umum": [
+    {
+      q: "Semua atlet berlatih keras. Budi adalah seorang atlet. Kesimpulan yang tepat adalah...",
+      opts: ["Budi mungkin tidak berlatih keras","Budi berlatih keras","Budi lebih keras dari atlet lain","Budi adalah atlet terbaik","Tidak ada yang dapat disimpulkan"],
+      ans: 1,
+      exp: "Premis mayor: Semua atlet berlatih keras. Premis minor: Budi adalah atlet. Maka secara deduktif (silogisme), Budi pasti berlatih keras."
+    },
+    {
+      q: "Jika hari ini hujan, maka jalanan basah. Hari ini jalanan tidak basah. Maka...",
+      opts: ["Hari ini mungkin hujan","Hari ini pasti hujan","Hari ini tidak hujan","Besok akan hujan","Kesimpulan tidak dapat ditarik"],
+      ans: 2,
+      exp: "Ini adalah penalaran Modus Tollens: Jika P → Q, dan ¬Q, maka ¬P. Jika jalanan tidak basah, maka hari ini tidak hujan."
+    },
+    {
+      q: "Dalam suatu barisan: 3, 6, 12, 24, ... Angka berikutnya adalah...",
+      opts: ["36","40","48","50","42"],
+      ans: 2,
+      exp: "Pola barisan ini adalah perkalian dengan 2 (rasio 2): 3×2=6, 6×2=12, 12×2=24, 24×2=48."
+    },
+    {
+      q: "Rani lebih tinggi dari Siti. Dewi lebih pendek dari Siti. Urutan dari yang tertinggi ke terendah adalah...",
+      opts: ["Siti – Rani – Dewi","Dewi – Siti – Rani","Rani – Siti – Dewi","Rani – Dewi – Siti","Siti – Dewi – Rani"],
+      ans: 2,
+      exp: "Rani > Siti (Rani lebih tinggi dari Siti), dan Siti > Dewi (Dewi lebih pendek dari Siti). Jadi urutan: Rani > Siti > Dewi."
+    },
+    {
+      q: "Semua mamalia bernapas. Paus adalah mamalia. Beruang kutub adalah mamalia. Manakah pernyataan yang PASTI benar?",
+      opts: ["Paus dan beruang kutub bernapas dengan cara yang sama","Paus bernapas","Beruang kutub lebih besar dari paus","Semua hewan bernapas","Paus bukan mamalia"],
+      ans: 1,
+      exp: "Karena paus adalah mamalia, dan semua mamalia bernapas, maka paus pasti bernapas. Pilihan lain tidak dapat disimpulkan dari premis yang ada."
+    }
+  ],
+  "tps-pu-kuantitatif": [
+    {
+      q: "Sebuah persegi panjang memiliki panjang 12 cm dan lebar 8 cm. Berapa luas persegi panjang tersebut?",
+      opts: ["80 cm²","96 cm²","100 cm²","88 cm²","104 cm²"],
+      ans: 1,
+      exp: "Luas persegi panjang = panjang × lebar = 12 × 8 = 96 cm²."
+    },
+    {
+      q: "Jika 3x + 7 = 22, maka nilai x adalah...",
+      opts: ["3","4","5","6","7"],
+      ans: 2,
+      exp: "3x + 7 = 22 → 3x = 22 - 7 = 15 → x = 15/3 = 5."
+    },
+    {
+      q: "Harga barang setelah diskon 20% adalah Rp 160.000. Harga awal barang tersebut adalah...",
+      opts: ["Rp 180.000","Rp 192.000","Rp 200.000","Rp 175.000","Rp 210.000"],
+      ans: 2,
+      exp: "Harga setelah diskon = harga awal × (1 - 20%) = harga awal × 0,8. Maka harga awal = 160.000 / 0,8 = Rp 200.000."
+    },
+    {
+      q: "Berapa persen 45 dari 180?",
+      opts: ["20%","25%","30%","35%","40%"],
+      ans: 1,
+      exp: "(45 / 180) × 100% = 0,25 × 100% = 25%."
+    },
+    {
+      q: "Sebuah mobil menempuh jarak 240 km dalam 3 jam. Berapa kecepatan rata-rata mobil tersebut?",
+      opts: ["70 km/jam","75 km/jam","80 km/jam","85 km/jam","90 km/jam"],
+      ans: 2,
+      exp: "Kecepatan rata-rata = jarak / waktu = 240 km / 3 jam = 80 km/jam."
+    }
+  ],
+  "literasi-indonesia": [
+    {
+      passage: "Minat baca masyarakat Indonesia masih tergolong rendah. Berdasarkan survei UNESCO, Indonesia berada di peringkat ke-60 dari 61 negara yang disurvei. Rendahnya minat baca disebabkan oleh beberapa faktor, di antaranya kurangnya fasilitas perpustakaan yang memadai, keterbatasan akses buku di daerah terpencil, serta budaya literasi yang belum kuat.",
+      q: "Gagasan pokok paragraf di atas adalah...",
+      opts: ["Survei UNESCO tentang minat baca","Rendahnya minat baca masyarakat Indonesia","Kurangnya fasilitas perpustakaan di Indonesia","Keterbatasan akses buku di daerah terpencil","Indonesia berada di peringkat ke-60"],
+      ans: 1,
+      exp: "Gagasan pokok adalah ide utama yang mendasari seluruh paragraf. Kalimat pertama menyatakan 'Minat baca masyarakat Indonesia masih tergolong rendah', yang merupakan topik utama yang dibahas di seluruh paragraf."
+    },
+    {
+      passage: "Teknologi informasi telah membawa perubahan besar dalam dunia pendidikan. Pembelajaran daring memungkinkan siswa belajar tanpa batasan geografis. Namun, tidak semua daerah memiliki infrastruktur internet yang memadai.",
+      q: "Kata 'daring' dalam paragraf tersebut memiliki makna yang sama dengan...",
+      opts: ["Luring","Online","Offline","Langsung","Tatap muka"],
+      ans: 1,
+      exp: "'Daring' adalah akronim dari 'dalam jaringan' yang merupakan padanan kata bahasa Indonesia untuk 'online', yaitu proses yang terhubung melalui internet."
+    },
+    {
+      q: "Kalimat yang menggunakan ejaan baku yang benar adalah...",
+      opts: ["Saya sudah meng-upload berkas tersebut","Ibu membeli sayur di pasar tradisionil","Anak-anak bermain di lapangan dengan riang","Mereka mensyukuri segala nikmat Tuhan","Para siswa-siswi mengikuti upacara bendera"],
+      ans: 2,
+      exp: "'Anak-anak bermain di lapangan dengan riang' adalah kalimat dengan ejaan baku yang benar. 'Tradisionil' seharusnya 'tradisional', 'meng-upload' seharusnya 'mengunggah', 'mensyukuri' seharusnya 'menyukuri', dan 'para siswa-siswi' redundan (cukup 'para siswa' atau 'siswa-siswi')."
+    },
+    {
+      passage: "Generasi muda Indonesia perlu meningkatkan kemampuan literasi digital. Di era serba digital ini, kemampuan untuk menganalisis, mengevaluasi, dan menciptakan konten digital merupakan kompetensi yang sangat krusial.",
+      q: "Kata 'krusial' dalam teks tersebut bermakna...",
+      opts: ["Tambahan","Pelengkap","Sangat penting","Biasa saja","Menentukan akhir"],
+      ans: 2,
+      exp: "'Krusial' berasal dari bahasa Inggris 'crucial' yang berarti sangat penting, menentukan, atau kritis. Dalam konteks kalimat tersebut, kompetensi literasi digital disebut sangat penting di era digital."
+    },
+    {
+      q: "Manakah penulisan kata depan yang tepat di bawah ini?",
+      opts: ["Buku itu ada didalam tas","Kami pergi ke Surabaya","Adik bermain dirumah","Ia datang dari pada arah barat","Pohon itu tumbuh didekat sungai"],
+      ans: 1,
+      exp: "'Ke' sebagai kata depan yang menunjukkan arah atau tujuan ditulis terpisah dari kata berikutnya: 'ke Surabaya'. Kata depan 'di' juga ditulis terpisah: 'di dalam', 'di rumah', 'di dekat'. 'Daripada' ditulis serangkai."
+    }
+  ],
+  "literasi-inggris": [
+    {
+      passage: "Climate change is one of the most pressing issues of our time. Rising global temperatures have led to more frequent extreme weather events, melting polar ice caps, and rising sea levels. Scientists warn that without significant reductions in greenhouse gas emissions, the consequences could be catastrophic.",
+      q: "What is the main concern expressed in the passage?",
+      opts: ["The beauty of polar ice caps","The serious threat of climate change","The history of global temperatures","Extreme weather is becoming rarer","Scientists disagree about climate"],
+      ans: 1,
+      exp: "The passage focuses on climate change as 'one of the most pressing issues of our time' and describes its serious consequences. The main concern is the serious threat posed by climate change."
+    },
+    {
+      q: "Choose the sentence with the correct grammar:",
+      opts: ["She don't like coffee","They was very tired after the trip","He has been working here since 2020","We are go to the market tomorrow","I have saw that movie last week"],
+      ans: 2,
+      exp: "'He has been working here since 2020' uses the present perfect continuous correctly to describe an action that started in the past and is still ongoing. The other options contain grammatical errors."
+    },
+    {
+      passage: "Despite facing numerous obstacles, Maria persisted in her studies. She worked part-time to support herself while maintaining excellent academic performance.",
+      q: "The word 'persisted' in the passage is closest in meaning to...",
+      opts: ["Gave up","Continued determinedly","Started freshly","Complained loudly","Moved quickly"],
+      ans: 1,
+      exp: "'Persist' means to continue doing something despite difficulties or opposition. In context, Maria 'continued determinedly' with her studies despite obstacles."
+    },
+    {
+      q: "Which sentence correctly uses a conditional sentence type 2?",
+      opts: ["If it rains, we will stay inside","If I were rich, I would travel the world","If she studied, she passed the exam","If he eats more, he is healthier","If they run fast, they win the race"],
+      ans: 1,
+      exp: "Type 2 conditional (hypothetical present/future) uses: If + past simple, would + bare infinitive. 'If I were rich, I would travel the world' correctly follows this pattern, expressing an unreal or unlikely situation."
+    },
+    {
+      passage: "The rapid advancement of artificial intelligence has sparked both excitement and concern. Proponents argue that AI can solve complex problems and increase productivity, while critics worry about job displacement and ethical implications.",
+      q: "According to the passage, what do critics of AI worry about?",
+      opts: ["AI solving complex problems","Increased productivity","Job displacement and ethical issues","The rapid pace of AI development","AI being too expensive"],
+      ans: 2,
+      exp: "The passage states critics 'worry about job displacement and ethical implications.' This directly matches option C about job displacement and ethical issues."
+    }
+  ]
+};
+
+let selectedModule = null;
+let questions = [];
+let currentQ = 0;
+let selectedAnswer = null;
+let answered = false;
+let results = [];
+let timer = null;
+let timeLeft = 300;
+let skipped = 0;
+
+function selectModule(el) {
+  document.querySelectorAll('.module-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedModule = el.dataset.module;
+  document.getElementById('btn-start').disabled = false;
+}
+
+function startQuiz() {
+  questions = [...QUESTIONS[selectedModule]];
+  currentQ = 0;
+  results = [];
+  skipped = 0;
+  showScreen('screen-quiz');
+  showQuestion();
+  startTimer();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function startTimer() {
+  timeLeft = 300;
+  clearInterval(timer);
+  timer = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      endQuiz();
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timeLeft / 60).toString().padStart(2,'0');
+  const s = (timeLeft % 60).toString().padStart(2,'0');
+  const el = document.getElementById('timer-text');
+  el.textContent = `${m}:${s}`;
+  const wrap = document.getElementById('timer-wrap');
+  wrap.classList.toggle('warning', timeLeft <= 60);
+}
+
+function showQuestion() {
+  const q = questions[currentQ];
+  answered = false;
+  selectedAnswer = null;
+  document.getElementById('q-num').textContent = `Soal ${currentQ + 1} dari ${questions.length}`;
+  document.getElementById('progress-bar').style.width = `${(currentQ / questions.length) * 100}%`;
+
+  const passageEl = document.getElementById('q-passage');
+  if (q.passage) {
+    passageEl.textContent = q.passage;
+    passageEl.style.display = 'block';
+  } else {
+    passageEl.style.display = 'none';
+  }
+
+  document.getElementById('q-text').textContent = q.q;
+  const feedbackEl = document.getElementById('feedback-box');
+  feedbackEl.style.display = 'none';
+
+  const optContainer = document.getElementById('options');
+  optContainer.innerHTML = '';
+  const labels = ['A','B','C','D','E'];
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<span class="opt-key">${labels[i]}.</span><span>${opt}</span>`;
+    btn.onclick = () => selectAnswer(i);
+    optContainer.appendChild(btn);
+  });
+
+  const modules = {
+    'tps-penalaran-umum': '🧠 Penalaran Umum',
+    'tps-pu-kuantitatif': '📐 Pengetahuan Kuantitatif',
+    'literasi-indonesia': '📖 Literasi Bahasa Indonesia',
+    'literasi-inggris': '🌐 Literasi Bahasa Inggris'
+  };
+  document.getElementById('quiz-module-label').textContent = modules[selectedModule] || selectedModule;
+  document.getElementById('btn-confirm').disabled = true;
+  document.getElementById('btn-skip').disabled = false;
+}
+
+function selectAnswer(i) {
+  if (answered) return;
+  selectedAnswer = i;
+  document.querySelectorAll('.option-btn').forEach((b, idx) => {
+    b.classList.toggle('selected', idx === i);
+  });
+  document.getElementById('btn-confirm').disabled = false;
+}
+
+function confirmAnswer() {
+  if (selectedAnswer === null || answered) return;
+  answered = true;
+  const q = questions[currentQ];
+  const correct = selectedAnswer === q.ans;
+  results.push({ q: q.q, selected: selectedAnswer, correct: q.ans, isCorrect: correct, skipped: false, opts: q.opts, exp: q.exp });
+
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.ans) b.classList.add('correct');
+    if (i === selectedAnswer && !correct) b.classList.add('wrong');
+    if (i === selectedAnswer) b.classList.remove('selected');
+  });
+
+  const fb = document.getElementById('feedback-box');
+  fb.className = `feedback-box ${correct ? 'correct' : 'wrong'}`;
+  fb.innerHTML = (correct ? '<strong>✓ Benar!</strong> ' : '<strong>✗ Kurang tepat.</strong> ') + (q.exp || '');
+  fb.style.display = 'block';
+  document.getElementById('btn-confirm').disabled = true;
+  document.getElementById('btn-skip').textContent = currentQ < questions.length - 1 ? 'Soal Berikutnya →' : 'Lihat Hasil →';
+  document.getElementById('btn-skip').disabled = false;
+  document.getElementById('btn-skip').onclick = () => nextQuestion();
+}
+
+function skipQuestion() {
+  const q = questions[currentQ];
+  results.push({ q: q.q, selected: null, correct: q.ans, isCorrect: false, skipped: true, opts: q.opts, exp: q.exp });
+  skipped++;
+  nextQuestion();
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= questions.length) {
+    endQuiz();
+  } else {
+    document.getElementById('btn-skip').textContent = 'Lewati';
+    document.getElementById('btn-skip').onclick = () => skipQuestion();
+    showQuestion();
+  }
+}
+
+function endQuiz() {
+  clearInterval(timer);
+  const correct = results.filter(r => r.isCorrect).length;
+  const wrong = results.filter(r => !r.isCorrect && !r.skipped).length;
+  const skip = results.filter(r => r.skipped).length;
+
+  document.getElementById('r-score').textContent = correct;
+  const titles = ['Perlu Banyak Latihan 💪','Terus Semangat! 📚','Lumayan Bagus ✨','Keren Banget! 🎯','Sempurna! 🏆'];
+  const subs = ['Jangan menyerah, pelajari lagi materi dasarnya.','Sudah ada kemajuan, tapi perlu lebih banyak latihan.','Sudah cukup baik, tingkatkan lagi!','Hampir sempurna, tetap konsisten berlatih!','Nilai sempurna! Kamu luar biasa!'];
+  const idx = Math.min(correct, 4);
+  document.getElementById('r-title').textContent = titles[idx];
+  document.getElementById('r-sub').textContent = subs[idx];
+  document.getElementById('r-correct').textContent = correct;
+  document.getElementById('r-wrong').textContent = wrong;
+  document.getElementById('r-skip').textContent = skip;
+
+  const labels = ['A','B','C','D','E'];
+  const reviewList = document.getElementById('review-list');
+  reviewList.innerHTML = '';
+  results.forEach((r, i) => {
+    const div = document.createElement('div');
+    div.className = `review-item ${r.skipped ? '' : r.isCorrect ? 'correct-item' : 'wrong-item'}`;
+    const shortQ = r.q.length > 80 ? r.q.slice(0, 80) + '...' : r.q;
+    let ansHTML = '';
+    if (r.skipped) {
+      ansHTML = `<span class="review-ans">Dilewati · Jawaban benar: <span class="r-correct">${labels[r.correct]}. ${r.opts[r.correct]}</span></span>`;
+    } else if (r.isCorrect) {
+      ansHTML = `<span class="review-ans"><span class="r-correct">✓ ${labels[r.selected]}. ${r.opts[r.selected]}</span> — Jawaban benar!</span>`;
+    } else {
+      ansHTML = `<span class="review-ans">Kamu jawab: <span class="r-wrong">${labels[r.selected]}. ${r.opts[r.selected]}</span> · Benar: <span class="r-correct">${labels[r.correct]}. ${r.opts[r.correct]}</span></span>`;
+    }
+    div.innerHTML = `<div class="review-q"><strong>Soal ${i+1}:</strong> ${shortQ}</div>${ansHTML}`;
+    if (r.exp) {
+      const expEl = document.createElement('div');
+      expEl.style.cssText = 'font-size:12px;color:var(--color-text-secondary);margin-top:6px;line-height:1.55;';
+      expEl.textContent = '💡 ' + r.exp;
+      div.appendChild(expEl);
+    }
+    reviewList.appendChild(div);
+  });
+
+  showScreen('screen-result');
+}
+
+function retryQuiz() {
+  document.getElementById('btn-start').disabled = true;
+  document.querySelectorAll('.module-card').forEach(c => c.classList.remove('selected'));
+  selectedModule = null;
+  showScreen('screen-start');
+}
+</script>
